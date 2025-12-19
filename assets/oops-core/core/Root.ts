@@ -16,20 +16,12 @@ import { resLoader } from "./common/loader/ResLoader";
 import { StorageManager } from "./common/storage/StorageManager";
 import { StorageSecuritySimple } from "./common/storage/StorageSecuritySimple";
 import { TimerManager } from "./common/timer/TimerManager";
-import { GameManager } from "./game/GameManager";
 import { LayerManager } from "./gui/layer/LayerManager";
 
 const { property } = _decorator;
 
 /** 框架显示层根节点 */
 export class Root extends Component {
-    /** 游戏层节点 */
-    @property({
-        type: Node,
-        tooltip: "游戏层"
-    })
-    game: Node = null!;            // 可使用多摄像机自定义二维或三维游戏场景
-
     /** 界面层节点 */
     @property({
         type: Node,
@@ -62,8 +54,6 @@ export class Root extends Component {
         oops.message = message;
         // 创建时间模块
         oops.timer = this.persist.addComponent(TimerManager)!;
-        // 游戏场景管理
-        oops.game = new GameManager(this.game);
         // 创建游戏界面管理对象
         oops.gui = new LayerManager();
     }

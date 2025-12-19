@@ -6,8 +6,8 @@
  */
 import { _decorator, profiler } from 'cc';
 import { DEBUG } from 'cc/env';
-import { oops } from '../../extensions/oops-plugin-framework/assets/core/Oops';
-import { Root } from '../../extensions/oops-plugin-framework/assets/core/Root';
+import { oops } from './core/Oops';
+import { Root } from './core/Root';
 import { Account } from '../script/game/account/Account';
 import { smc } from '../script/game/common/SingletonModuleComp';
 import { UIConfigData } from '../script/game/common/config/GameUIConfig';

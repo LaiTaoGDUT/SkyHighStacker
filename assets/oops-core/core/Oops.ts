@@ -18,7 +18,6 @@ import { Logger } from "./common/log/Logger";
 import { RandomManager } from "./common/random/RandomManager";
 import { StorageManager } from "./common/storage/StorageManager";
 import { TimerManager } from "./common/timer/TimerManager";
-import { GameManager } from "./game/GameManager";
 import { LayerManager } from "./gui/layer/LayerManager";
 
 /** 框架版本号 */
@@ -46,8 +45,6 @@ export class oops {
     static audio: AudioManager;
     /** 二维界面管理 */
     static gui: LayerManager;
-    /** 三维游戏世界管理 */
-    static game: GameManager;
 
     /** ----------可选模块---------- */
 

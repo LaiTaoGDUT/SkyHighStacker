@@ -41,22 +41,7 @@ export class Boost extends Component {
           },
           (err) => {
             if (err) {
-              console.error('预加载失败');
-              resolve(false);
-            }
-          }
-        );
-        baseBundle.preloadDir(
-          'game',
-          (finished: number, total: number) => {
-            const progress = finished / total;
-            if (this.progressBar) {
-              this.progressBar.progress = progress;
-            }
-          },
-          (err) => {
-            if (err) {
-              console.error('预加载失败');
+              console.error('预加载base分包的common失败');
               resolve(false);
             }
           }
@@ -71,7 +56,7 @@ export class Boost extends Component {
           },
           (err) => {
             if (err) {
-              console.error('预加载失败');
+              console.error('预加载base分包的gui失败');
               resolve(false);
             }
           }
@@ -88,32 +73,18 @@ export class Boost extends Component {
       return;
     }
 
-    /** 2. 同时加载 主游戏资源包 与 核心框架内的main场景 */
+    /** 2 加载主游戏资源包 */
+    const baseBundle = await this.loadBase();
+    if (baseBundle === null) {
+      console.error('加载主游戏资源包失败');
+      loadFail = true;
+      return;
+    }
+
+    /** 3. 同时加载 主游戏资源包内的素材资源 与 核心框架内的main场景 */
     let loadFail = false;
-    /** 2.1 加载主游戏资源包以及下面的common资源 */
-    this.loadBundle('base').then((baseBundle) => {
-      if (baseBundle === null) {
-        console.error('加载主游戏资源包失败');
-        loadFail = true;
-        return;
-      }
-      baseBundle.preloadDir(
-        'common',
-        (finished: number, total: number) => {
-          const progress = finished / total;
-          if (this.progressBar) {
-            this.progressBar.progress = progress;
-          }
-        },
-        (err) => {
-          if (err) {
-            console.error('预加载失败');
-            loadFail = true;
-          }
-        }
-      );
-    });
-    /** 2.2 加载核心框架内的main场景，作为游戏的入口 */
+
+    /** 3.2 加载核心框架内的main场景，作为游戏的入口 */
     oopsCoreBundle.preloadScene(
       'main',
       (finished: number, total: number) => {
