@@ -1,0 +1,13 @@
+{
+  "ver": "4.0.24",
+  "importer": "typescript",
+  "imported": true,
+  "uuid": "cbfcbfa1-1f90-45d4-a848-654cdbb0ed65",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "moduleId": "project:///assets/script/core/Root.js",
+    "importerSettings": 4,
+    "simulateGlobals": []
+  }
+}

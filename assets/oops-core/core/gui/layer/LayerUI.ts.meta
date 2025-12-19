@@ -1,0 +1,13 @@
+{
+  "ver": "4.0.24",
+  "importer": "typescript",
+  "imported": true,
+  "uuid": "2ead843a-63c1-40b9-8d35-6c3c342254a7",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "moduleId": "project:///assets/script/core/gui/layer/LayerUI.js",
+    "importerSettings": 4,
+    "simulateGlobals": []
+  }
+}

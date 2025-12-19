@@ -6,7 +6,7 @@
   "bundleConfig": {
     "custom": {
       "auto_eeFc361cdCN6B1aeyT9XzP": {
-        "displayName": "bundle",
+        "displayName": "小游戏分包",
         "configs": {
           "native": {
             "preferredOptions": {
@@ -31,7 +31,7 @@
         }
       },
       "auto_7dYd8Jj2JCW7cYroiOdTJt": {
-        "displayName": "resources",
+        "displayName": "远程分包",
         "configs": {
           "native": {
             "preferredOptions": {

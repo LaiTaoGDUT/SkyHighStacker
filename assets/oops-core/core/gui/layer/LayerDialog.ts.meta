@@ -1,0 +1,13 @@
+{
+  "ver": "4.0.24",
+  "importer": "typescript",
+  "imported": true,
+  "uuid": "e70d86b3-57b5-4bbb-b4fb-1850024f4e64",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "moduleId": "project:///assets/script/core/gui/layer/LayerDialog.js",
+    "importerSettings": 4,
+    "simulateGlobals": []
+  }
+}

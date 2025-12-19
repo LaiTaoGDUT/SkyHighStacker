@@ -4,8 +4,8 @@
  * @LastEditors: bansomin
  * @LastEditTime: 2024-03-31 01:17:02
  */
-import { _decorator } from "cc";
-import { gui } from "db://oops-framework/core/gui/Gui";
+import { _decorator, ProgressBar } from "cc";
+import { gui } from "db://assets/oops-core/core/gui/Gui";
 import { LayerType } from "db://oops-framework/core/gui/layer/LayerEnum";
 import { oops } from "db://oops-framework/core/Oops";
 import { ecs } from "db://oops-framework/libs/ecs/ECS";
@@ -21,17 +21,8 @@ const { ccclass, property } = _decorator;
 @ecs.register('LoadingView', false)
 @gui.register('LoadingView', { layer: LayerType.UI, prefab: "gui/loading/loading" })
 export class LoadingViewComp extends CCViewVM<Initialize> {
-    /** VM 组件绑定数据 */
-    data: any = {
-        /** 加载资源当前进度 */
-        finished: 0,
-        /** 加载资源最大进度 */
-        total: 0,
-        /** 加载资源进度比例值 */
-        progress: "0",
-        /** 加载流程中提示文本 */
-        prompt: ""
-    };
+    @property(ProgressBar)
+    progressBar: ProgressBar = null;
 
     private progress: number = 0;
 

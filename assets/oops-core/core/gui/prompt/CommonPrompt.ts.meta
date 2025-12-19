@@ -1,0 +1,13 @@
+{
+  "ver": "4.0.24",
+  "importer": "typescript",
+  "imported": true,
+  "uuid": "54d133d3-4018-4a6d-a76b-2de243feeee1",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "moduleId": "project:///assets/script/core/gui/prompt/CommonPrompt.js",
+    "importerSettings": 4,
+    "simulateGlobals": []
+  }
+}

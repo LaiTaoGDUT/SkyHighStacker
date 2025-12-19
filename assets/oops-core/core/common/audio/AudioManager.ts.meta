@@ -1,0 +1,13 @@
+{
+  "ver": "4.0.24",
+  "importer": "typescript",
+  "imported": true,
+  "uuid": "15d69e4f-ebcb-4140-80cc-e79fa035c2f0",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "moduleId": "project:///assets/script/core/game/audio/AudioManager.js",
+    "importerSettings": 4,
+    "simulateGlobals": []
+  }
+}

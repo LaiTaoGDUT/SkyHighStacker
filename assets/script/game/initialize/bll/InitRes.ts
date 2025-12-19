@@ -26,29 +26,12 @@ export class InitResSystem extends ecs.ComblockSystem implements ecs.IEntityEnte
     entityEnter(e: Initialize): void {
         var queue: AsyncQueue = new AsyncQueue();
 
-        // 加载多语言包加载多语言包
-        this.loadLanguage(queue);
         // 加载公共资源
         this.loadCommon(queue);
         // 加载游戏内容加载进度提示界面
         this.onComplete(queue, e);
 
         queue.play();
-    }
-
-    /** 加载化语言包（可选） */
-    private loadLanguage(queue: AsyncQueue) {
-        queue.push((next: NextFunction, params: any, args: any) => {
-            // 设置默认语言
-            let lan = oops.storage.get("language");
-            if (lan == null || lan == "") {
-                lan = "zh";
-                oops.storage.set("language", lan);
-            }
-
-            // 加载语言包资源
-            oops.language.setLanguage(lan, next);
-        });
     }
 
     /** 加载公共资源（必备） */
