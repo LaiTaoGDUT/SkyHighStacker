@@ -47,7 +47,7 @@ export class GameQueryConfig {
             this._data["username"] = StringUtil.guid();
         }
 
-        oops.log.logConfig(this._data, "查询参数");
+        oops.instance.log.logConfig(this._data, "查询参数");
     }
 
     private parseUrl() {

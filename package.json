@@ -3,9 +3,6 @@
   "creator": {
     "version": "3.8.7"
   },
-  "dependencies": {
-    "crypto-es": "^1.2.7"
-  },
   "description": "摩天叠叠乐",
   "name": "sky-high-stacker",
   "uuid": "00d7d957-a3e8-4ad6-80f4-2fcfb235bca4",

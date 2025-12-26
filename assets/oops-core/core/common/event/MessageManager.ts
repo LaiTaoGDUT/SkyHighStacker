@@ -64,47 +64,6 @@ export class MessageEventData {
     }
 }
 
-/** 
- * 全局消息管理
- * @help    https://gitee.com/dgflash/oops-framework/wikis/pages?sort_id=12037894&doc_id=2873565
- * @example 
-// 注册持续监听的全局事件
-export class RoleViewComp extends Component{
-    onLoad(){
-        // 监听全局事件
-        oops.message.on(GameEvent.GameServerConnected, this.onHandler, this);
-    }
-    
-    protected onDestroy() {
-        // 对象释放时取消注册的全局事件
-        oops.message.off(GameEvent.GameServerConnected, this.onHandler, this);
-    }
-    
-    private onHandler(event: string, args: any) {
-        switch (event) {
-            case GameEvent.GameServerConnected:
-                console.log("处理游戏服务器连接成功后的逻辑");
-                break;
-        }
-    }
-}
-
-// 注册只触发一次的全局事件
-export class RoleViewComp extends Component{
-    onLoad(){
-        // 监听一次事件，事件响应后，该监听自动移除
-        oops.message.once(GameEvent.GameServerConnected, this.onHandler, this);
-    }
-    
-    private onHandler(event: string, args: any) {
-        switch (event) {
-            case GameEvent.GameServerConnected:
-                console.log("处理游戏服务器连接成功后的逻辑");
-                break;
-        }
-    }
-}
- */
 export class MessageManager {
     private events: Map<string, Array<EventData>> = new Map();
 

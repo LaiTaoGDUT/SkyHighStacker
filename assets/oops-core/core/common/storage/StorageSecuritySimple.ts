@@ -17,8 +17,8 @@ export class StorageSecuritySimple implements IStorageSecurity {
     private secretkey: string = null!;
 
     constructor() {
-        const key = oops.config.game.localDataKey;
-        const iv = oops.config.game.localDataIv;
+        const key = oops.instance.config.game.localDataKey;
+        const iv = oops.instance.config.game.localDataIv;
         this.secretkey = key + iv;
     }
 

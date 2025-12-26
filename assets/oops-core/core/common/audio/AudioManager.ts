@@ -66,7 +66,7 @@ export class AudioManager extends Component {
 
     /** 保存音乐音效的音量、开关配置数据到本地 */
     save() {
-        oops.storage.set(LOCAL_STORE_KEY, this.data);
+        oops.instance.storage.set(LOCAL_STORE_KEY, this.data);
     }
 
     /** 本地加载音乐音效的音量、开关配置数据并设置到游戏中 */
@@ -74,7 +74,7 @@ export class AudioManager extends Component {
         this.music = new AudioMusic();
         this.music.parent = this.node;
 
-        this.data = oops.storage.getJson(LOCAL_STORE_KEY);
+        this.data = oops.instance.storage.getJson(LOCAL_STORE_KEY);
         if (this.data) {
             this.setState();
         }

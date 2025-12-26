@@ -1,117 +1,149 @@
-import { _decorator, AssetManager, assetManager, Canvas, Component, Node, ProgressBar, director } from 'cc';
+import { _decorator, AssetManager, assetManager, Component, ProgressBar, director, SceneAsset, js } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('initialize')
-export class Boost extends Component {
+export class initialize extends Component {
 
   @property(ProgressBar)
   progressBar: ProgressBar | null = null;
 
-  private loaded: number = 0;
-  private total: number = 0;
+  private coreTotalPercent: number = 0.2;
+  private coreTotalLoadNum: number = 0;
 
   private loadBundle(bundleName: string): Promise<AssetManager.Bundle | null> {
+    console.log(`[Initialize] 开始加载资源包: ${bundleName}`);
     return new Promise<AssetManager.Bundle | null>(resolve => {
       assetManager.loadBundle(bundleName, (e, asset) => {
         if (e) {
-          console.error(e);
+          console.error(`[Initialize] 加载资源包 ${bundleName} 失败`, e);
           resolve(null)
           return;
         }
+        console.log(`[Initialize] 加载资源包 ${bundleName} 成功`);
         resolve(asset);
       });
     })
   }
 
-  private loadBase() {
+  private loadCore() {
+    console.log('[Initialize] 准备加载核心框架脚本包(oops-core)');
     return new Promise<boolean>(resolve => {
-      this.loadBundle('base').then((baseBundle) => {
-        if (baseBundle === null) {
-          console.error('加载主游戏资源包失败');
+      this.loadBundle('oops-core').then((oopsCoreBundle) => {
+        if (oopsCoreBundle === null) {
+          console.error('加载核心框架脚本包失败');
           resolve(false);
           return;
         }
-        baseBundle.preloadDir(
-          'common',
+
+        console.log('[Initialize] oops-core分包加载成功，开始预加载core与module资源');
+        this.coreTotalLoadNum = 2;
+
+        Promise.all([
+          new Promise<boolean>((resolve) => {
+            console.log('[Initialize] 开始预加载oops-core分包的core');
+            oopsCoreBundle.loadDir(
+              'core',
+              (err) => {
+                if (err) {
+                  console.error('预加载oops-core分包的core失败');
+                  resolve(false);
+                } else {
+                  console.log('[Initialize] 预加载oops-core分包的core成功');
+                  if (this.progressBar) {
+                    this.progressBar.progress += this.coreTotalPercent / this.coreTotalLoadNum;
+                  }
+                  resolve(true);
+                }
+              }
+            )
+          }),
+          new Promise<boolean>((resolve) => {
+            console.log('[Initialize] 开始预加载oops-core分包的module');
+            oopsCoreBundle.loadDir(
+              'module',
+              (err) => {
+                if (err) {
+                  console.error('预加载oops-core分包的module失败');
+                  resolve(false);
+                } else {
+                  console.log('[Initialize] 预加载oops-core分包的module成功');
+                  if (this.progressBar) {
+                    this.progressBar.progress += this.coreTotalPercent / this.coreTotalLoadNum;
+                  }
+                  resolve(true);
+                }
+              }
+            )
+          })
+        ]).then((results) => {
+          if (results.every((result) => result)) {
+            console.log('[Initialize] 核心框架(core和module)预加载成功，准备初始化oops单例');
+            const oops = js.getClassByName('oops') as any;
+            oops.instance;
+            resolve(true);
+          } else {
+            console.error('[Initialize] 核心框架(core和module)预加载存在失败');
+            resolve(false);
+          }
+        });
+      });
+    })
+  }
+
+  private loadBase() {
+    console.log('[Initialize] 准备加载主游戏资源包(main-game)');
+    return new Promise<SceneAsset | null>(resolve => {
+      this.loadBundle('main-game').then((baseBundle) => {
+        if (baseBundle === null) {
+          console.error('加载主游戏资源包失败');
+          resolve(null);
+          return;
+        }
+
+        console.log('[Initialize] base分包加载成功，开始预加载startMenu场景');
+        baseBundle.loadScene(
+          'startMenu',
           (finished: number, total: number) => {
-            const progress = finished / total;
+            const progress = (finished / total) * (1 - this.coreTotalPercent) + this.coreTotalPercent;
             if (this.progressBar) {
               this.progressBar.progress = progress;
             }
+            // 这里progress事件很多，可以不用每次都打印
           },
-          (err) => {
+          (err, scene) => {
             if (err) {
-              console.error('预加载base分包的common失败');
-              resolve(false);
+              console.error('预加载开始菜单场景失败');
+              resolve(null);
+            } else {
+              console.log('[Initialize] startMenu场景预加载成功');
+              resolve(scene);
             }
           }
-        );
-        baseBundle.preloadDir(
-          'gui',
-          (finished: number, total: number) => {
-            const progress = finished / total;
-            if (this.progressBar) {
-              this.progressBar.progress = progress;
-            }
-          },
-          (err) => {
-            if (err) {
-              console.error('预加载base分包的gui失败');
-              resolve(false);
-            }
-          }
-        );
+        )
       });
     })
   }
 
   async start() {
-    /** 1. 加载核心框架脚本包 */
-    const oopsCoreBundle = await this.loadBundle('oops-core');
-    if (oopsCoreBundle === null) {
-      console.error('加载核心框架脚本包失败');
+    console.log('[Initialize] ====== Step 1: 加载核心框架脚本包 ======');
+    const loadRes = await this.loadCore();
+    if (!loadRes) {
+      console.error('[Initialize] Step 1 失败，终止后续流程');
       return;
     }
+    console.log('[Initialize] ====== Step 1 完成 ======');
 
-    /** 2 加载主游戏资源包 */
-    const baseBundle = await this.loadBase();
-    if (baseBundle === null) {
-      console.error('加载主游戏资源包失败');
-      loadFail = true;
+    console.log('[Initialize] ====== Step 2: 加载主游戏资源包 ======');
+    const scene = await this.loadBase();
+    if (!scene) {
+      console.error('[Initialize] Step 2 失败，终止后续流程');
       return;
     }
+    console.log('[Initialize] ====== Step 2 完成 ======');
 
-    /** 3. 同时加载 主游戏资源包内的素材资源 与 核心框架内的main场景 */
-    let loadFail = false;
-
-    /** 3.2 加载核心框架内的main场景，作为游戏的入口 */
-    oopsCoreBundle.preloadScene(
-      'main',
-      (finished: number, total: number) => {
-        const progress = finished / total;
-        if (this.progressBar) {
-          this.progressBar.progress = progress;
-        }
-      },
-      (err) => {
-        if (err) {
-          console.error('预加载核心框架内的入口场景失败');
-          loadFail = true;
-        }
-      }
-    )
-
-    if (loadFail) return;
-
-    /** 3. 加载完成后，运行main场景 */
-    oopsCoreBundle.loadScene('main', (err, scene) => {
-      if (err) {
-        console.error('加载核心框架内的入口场景失败');
-        loadFail = true;
-        return;
-      }
-      director.runScene(scene);
-    });
+    console.log('[Initialize] ====== Step 3: 运行开始菜单场景 ======');
+    director.runScene(scene);
+    console.log('[Initialize] Step 3 完成，已切换到startMenu场景');
   }
 }
 

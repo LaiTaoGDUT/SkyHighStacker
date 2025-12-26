@@ -105,7 +105,7 @@ export class GameConfig {
     constructor(config: any) {
         this._data = Object.freeze(config);
         this.setConfigType(this._data.type);
-        oops.log.logConfig(this._data, "游戏配置");
+        oops.instance.log.logConfig(this._data, "游戏配置");
     }
 
     /**

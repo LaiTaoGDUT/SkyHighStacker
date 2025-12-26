@@ -6,7 +6,7 @@
  */
 
 import { JsonAsset } from "cc";
-import { ZipLoader } from "db://oops-framework/core/common/loader/ZipLoader";
+import { ZipLoader } from "../common/loader/ZipLoader";
 import { resLoader } from "../common/loader/ResLoader";
 
 /** 资源路径 */

@@ -181,7 +181,7 @@ export class AudioEffectPool {
             // 记录正在播放的音效播放器
             this.effects.set(ae.key, ae);
 
-            node.parent = oops.audio.node;
+            node.parent = oops.instance.audio && oops.instance.audio.node;
             ae.path = path;
             ae.params = params;
             ae.loop = params.loop!;

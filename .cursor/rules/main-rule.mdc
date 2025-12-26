@@ -1,0 +1,454 @@
+---
+alwaysApply: true
+---
+
+# SkyHighStacker（摩天叠叠乐）开发规范
+
+## 项目概述
+这是一个使用 Cocos Creator 3.8.7 开发的无尽搭楼游戏，玩法类似《都市摩天楼》。玩家需要在移动的建筑块上点击屏幕，将建筑块叠加起来，搭建越来越高的摩天大楼。随着高度增加，背景会动态变化。
+
+## 技术栈
+- **引擎**: Cocos Creator 3.8.7
+- **语言**: TypeScript（启用严格模式）
+- **框架**: oops-core 核心框架
+- **资源管理**: Asset Bundle 分包加载机制
+
+## 项目结构规范
+
+### 目录组织
+```
+assets/
+├── base/                    # 基础资源（纹理、通用资源）
+├── config/                  # 配置文件
+├── initialize/              # 初始化场景和脚本
+├── libs/                    # 第三方库
+├── main-game/              # 主游戏内容（重点开发目录）
+│   ├── scenes/             # 游戏场景
+│   ├── scripts/            # 游戏脚本
+│   │   ├── game/          # 游戏核心逻辑
+│   │   ├── blocks/        # 建筑块相关
+│   │   ├── background/    # 背景系统
+│   │   ├── ui/            # UI 界面
+│   │   ├── managers/      # 管理器（游戏管理、资源管理等）
+│   │   └── utils/         # 工具类
+│   ├── prefabs/           # 预制体
+│   └── resources/         # 游戏资源
+└── oops-core/             # 核心框架（不要修改）
+```
+
+## 代码规范
+
+### 1. TypeScript 编码规范
+
+#### 类和组件命名
+```typescript
+// 使用 PascalCase 命名类和组件
+@ccclass('GameManager')
+export class GameManager extends Component {
+  // ...
+}
+
+// 组件装饰器中的名称使用 PascalCase
+@ccclass('BlockController')
+export class BlockController extends Component {
+  // ...
+}
+```
+
+#### 变量和属性命名
+```typescript
+// 私有属性使用 camelCase，可以加 private 关键字
+private currentScore: number = 0;
+private blockSpeed: number = 5;
+
+// 公开属性使用 @property 装饰器
+@property(Node)
+public blockNode: Node | null = null;
+
+@property(Label)
+public scoreLabel: Label | null = null;
+
+// 常量使用 UPPER_SNAKE_CASE
+private readonly MAX_BLOCK_SIZE: number = 100;
+private readonly MIN_BLOCK_SIZE: number = 50;
+```
+
+#### 方法命名
+```typescript
+// 使用 camelCase
+private initializeGame(): void {
+  // ...
+}
+
+private spawnBlock(): void {
+  // ...
+}
+
+private updateBackground(height: number): void {
+  // ...
+}
+```
+
+### 2. Cocos Creator 特定规范
+
+#### 组件生命周期
+```typescript
+@ccclass('BlockController')
+export class BlockController extends Component {
+  // 属性声明
+  @property(Node)
+  blockPrefab: Node | null = null;
+
+  // 生命周期方法按顺序排列
+  protected onLoad(): void {
+    // 初始化引用
+  }
+
+  protected start(): void {
+    // 初始化逻辑
+  }
+
+  protected update(deltaTime: number): void {
+    // 每帧更新
+  }
+
+  protected onDestroy(): void {
+    // 清理资源
+  }
+}
+```
+
+#### 节点和组件获取
+```typescript
+// 优先使用 @property 绑定
+@property(Node)
+private targetNode: Node | null = null;
+
+// 如果需要动态获取，使用类型断言
+private getChildNode(name: string): Node | null {
+  return this.node.getChildByName(name);
+}
+
+// 获取组件时进行空值检查
+private getComponent<T extends Component>(type: Constructor<T>): T | null {
+  return this.node.getComponent(type);
+}
+```
+
+### 3. 游戏逻辑规范
+
+#### 建筑块（Block）系统
+```typescript
+/**
+ * 建筑块必须包含以下功能：
+ * 1. 水平移动逻辑
+ * 2. 停止移动并固定
+ * 3. 与下方建筑块对齐和裁剪
+ * 4. 碰撞检测
+ * 5. 掉落处理（未对齐部分）
+ */
+@ccclass('Block')
+export class Block extends Component {
+  // 移动速度（随难度增加）
+  private moveSpeed: number = 0;
+  
+  // 移动方向
+  private moveDirection: number = 1; // 1 或 -1
+  
+  // 是否已固定
+  private isFixed: boolean = false;
+
+  // 更多属性...
+}
+```
+
+#### 游戏管理器（GameManager）
+```typescript
+/**
+ * 游戏管理器负责：
+ * 1. 游戏状态管理（开始、暂停、结束）
+ * 2. 分数计算
+ * 3. 难度递增
+ * 4. 建筑块生成和管理
+ * 5. 背景高度同步
+ */
+@ccclass('GameManager')
+export class GameManager extends Component {
+  private gameState: GameState = GameState.Ready;
+  private currentHeight: number = 0;
+  private blockCount: number = 0;
+  
+  // 单例模式（可选）
+  private static _instance: GameManager | null = null;
+  
+  public static get instance(): GameManager {
+    return this._instance!;
+  }
+
+  protected onLoad(): void {
+    GameManager._instance = this;
+  }
+}
+
+enum GameState {
+  Ready,
+  Playing,
+  Paused,
+  GameOver
+}
+```
+
+#### 背景系统（BackgroundController）
+```typescript
+/**
+ * 背景系统负责：
+ * 1. 根据高度动态切换背景
+ * 2. 实现视差滚动效果
+ * 3. 无缝循环背景
+ * 4. 背景层级管理（地面、城市、天空、太空等）
+ */
+@ccclass('BackgroundController')
+export class BackgroundController extends Component {
+  // 背景层数组
+  @property([Node])
+  private backgroundLayers: Node[] = [];
+  
+  // 高度阈值配置
+  private readonly HEIGHT_THRESHOLDS = {
+    ground: 0,      // 地面
+    city: 500,      // 城市
+    sky: 1500,      // 天空
+    space: 3000     // 太空
+  };
+
+  // 根据高度更新背景
+  public updateBackground(currentHeight: number): void {
+    // 背景切换逻辑
+  }
+}
+```
+
+### 4. 物理和碰撞
+
+```typescript
+// 使用 Cocos Creator 的物理系统
+import { RigidBody2D, BoxCollider2D, Contact2DType } from 'cc';
+
+@ccclass('Block')
+export class Block extends Component {
+  private rigidBody: RigidBody2D | null = null;
+  private collider: BoxCollider2D | null = null;
+
+  protected onLoad(): void {
+    this.rigidBody = this.getComponent(RigidBody2D);
+    this.collider = this.getComponent(BoxCollider2D);
+    
+    // 注册碰撞回调
+    if (this.collider) {
+      this.collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+    }
+  }
+
+  private onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D): void {
+    // 碰撞处理
+  }
+}
+```
+
+### 5. 资源加载和管理
+
+```typescript
+// 使用 oops-core 框架的资源管理
+// 或使用 Cocos Creator 原生 API
+import { resources, Prefab, instantiate } from 'cc';
+
+class ResourceManager {
+  // 加载预制体
+  public loadPrefab(path: string): Promise<Prefab | null> {
+    return new Promise((resolve) => {
+      resources.load(path, Prefab, (err, prefab) => {
+        if (err) {
+          console.error(`加载预制体失败: ${path}`, err);
+          resolve(null);
+          return;
+        }
+        resolve(prefab);
+      });
+    });
+  }
+
+  // 实例化节点
+  public instantiateNode(prefab: Prefab): Node | null {
+    if (!prefab) return null;
+    return instantiate(prefab);
+  }
+}
+```
+
+### 6. UI 系统
+
+```typescript
+/**
+ * UI 组件规范：
+ * 1. 每个 UI 界面是一个独立的组件
+ * 2. 使用事件系统进行通信
+ * 3. 分离数据和视图逻辑
+ */
+@ccclass('GameUI')
+export class GameUI extends Component {
+  @property(Label)
+  private scoreLabel: Label | null = null;
+  
+  @property(Label)
+  private heightLabel: Label | null = null;
+  
+  @property(Node)
+  private pauseButton: Node | null = null;
+
+  // 更新分数显示
+  public updateScore(score: number): void {
+    if (this.scoreLabel) {
+      this.scoreLabel.string = `分数: ${score}`;
+    }
+  }
+
+  // 更新高度显示
+  public updateHeight(height: number): void {
+    if (this.heightLabel) {
+      this.heightLabel.string = `高度: ${Math.floor(height)}m`;
+    }
+  }
+}
+```
+
+## 游戏核心机制实现要点
+
+### 1. 建筑块叠加机制
+- 新块在上方水平移动
+- 玩家点击屏幕时，块停止移动并下落
+- 计算与下方块的重叠面积
+- 裁剪掉未对齐的部分（可选：掉落动画）
+- 完美对齐时给予奖励
+
+### 2. 难度递增
+- 随着高度增加，移动速度加快
+- 建筑块尺寸可以逐渐减小
+- 移动范围可以增大
+
+### 3. 分数系统
+- 成功叠加 +10 分
+- 完美对齐 +50 分（额外奖励）
+- 连续完美对齐有 Combo 加成
+
+### 4. 背景变化
+- 0-500m: 地面城市景观
+- 500-1500m: 低空云层
+- 1500-3000m: 高空天空
+- 3000m+: 太空景观
+
+### 5. 摄像机跟随
+- 摄像机平滑跟随最高的建筑块
+- 使用缓动或插值实现平滑移动
+
+## 注释规范
+
+```typescript
+/**
+ * 类或重要方法的文档注释
+ * @description 详细描述功能
+ * @param paramName 参数说明
+ * @returns 返回值说明
+ */
+public methodName(paramName: type): returnType {
+  // 实现逻辑
+}
+
+// 单行注释用于解释复杂逻辑
+// 中文注释清晰易懂
+```
+
+## 性能优化建议
+
+1. **对象池**: 建筑块使用对象池管理，避免频繁创建销毁
+2. **批处理**: 相同材质的节点合并渲染
+3. **事件清理**: 组件销毁时取消事件监听
+4. **资源释放**: 及时释放不用的资源
+5. **减少 update**: 只在必要时使用 update，优先使用事件驱动
+
+## 调试规范
+
+```typescript
+// 使用有意义的日志标签
+console.log('[GameManager] 游戏开始');
+console.log('[Block] 生成新建筑块', { position, speed });
+console.error('[GameManager] 初始化失败', error);
+console.warn('[Block] 建筑块对齐度过低', alignmentRatio);
+```
+
+## Git 提交规范
+
+- `feat:` 新功能
+- `fix:` 修复 bug
+- `refactor:` 重构代码
+- `style:` 代码格式调整
+- `docs:` 文档更新
+- `perf:` 性能优化
+
+示例:
+```
+feat: 实现建筑块水平移动逻辑
+fix: 修复碰撞检测不准确的问题
+refactor: 重构背景切换系统
+```
+
+## 测试要点
+
+1. 建筑块移动是否流畅
+2. 碰撞检测是否准确
+3. 分数计算是否正确
+4. 背景切换是否自然
+5. 摄像机跟随是否平滑
+6. 游戏结束条件是否合理
+7. 性能是否达标（60fps）
+
+## 特别注意事项
+
+1. **不要修改 oops-core 框架代码**
+2. **所有游戏逻辑放在 main-game 目录下**
+3. **使用 Asset Bundle 分包管理资源**
+4. **遵循 Cocos Creator 组件化开发思想**
+5. **注意内存管理，避免内存泄漏**
+6. **保持代码简洁，避免过度设计**
+7. **使用 TypeScript 的类型系统，避免 any**
+8. **日志使用中文，便于调试**
+
+## 开发优先级
+
+1. **Phase 1 - 核心玩法**
+   - 建筑块生成和移动
+   - 点击停止和堆叠
+   - 碰撞检测和裁剪
+   - 基础分数系统
+
+2. **Phase 2 - 视觉效果**
+   - 摄像机跟随
+   - 背景动态切换
+   - 粒子效果和动画
+
+3. **Phase 3 - 游戏完善**
+   - UI 界面（开始、暂停、结束）
+   - 音效和音乐
+   - 难度递增系统
+   - 数据持久化（最高分）
+
+4. **Phase 4 - 优化打磨**
+   - 性能优化
+   - 特效打磨
+   - 新手引导
+   - 成就系统（可选）
+
+---
+
+**记住**: 这是一个无尽搭楼游戏，核心是"简单易上手，但想玩好很难"。专注于核心玩法的流畅性和手感，其他功能都是锦上添花。
+
+
