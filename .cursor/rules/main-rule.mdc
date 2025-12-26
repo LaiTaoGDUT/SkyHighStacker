@@ -18,7 +18,7 @@ alwaysApply: true
 ### 目录组织
 ```
 assets/
-├── base/                    # 基础资源（纹理、通用资源）
+├── base/                    # 首场景loading使用的基础资源（纹理、通用资源），非必要不加额外内容
 ├── config/                  # 配置文件
 ├── initialize/              # 初始化场景和脚本
 ├── libs/                    # 第三方库
